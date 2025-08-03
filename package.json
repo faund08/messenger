@@ -4,9 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev:web": "pnpm --filter web dev",
+    "dev:electron": "tsc -p electron && electron electron/dist/main.js",
+    "dev:all": "concurrently \"pnpm dev:web\" \"pnpm dev:electron\""
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "electron-updater": "^6.6.2"
+  }
 }

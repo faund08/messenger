@@ -18,5 +18,22 @@
     "electron": "^37.2.5",
     "typescript": "^5.9.2"
   },
-  "description": ""
+   "build": {
+    "appId": "com.messenger.desktop",
+    "productName": "Messenger",
+    "files": [
+      "dist/**/*",
+      "preload.js"
+    ],
+    "directories": {
+      "buildResources": "build"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "faund08",
+        "repo": "messenger"
+      }
+    ]
+  }
 }

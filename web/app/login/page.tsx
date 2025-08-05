@@ -1,6 +1,11 @@
+"use client";
+
+
+import '../styles/global.css';
+import Image from 'next/image'
 
 import { useForm } from "react-hook-form";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 
 type LoginForm = {
     email: string;
@@ -21,9 +26,15 @@ export default function LoginPage() {
 
 
     return (
-         <div className="min-h-screen flex flex-col items-center justify-center p-4">
-      <h1 className="text-2xl font-bold mb-4">Вход</h1>
-      <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-sm space-y-4">
+         <div className="min-h-screen bg-linear-to-t from-sky-500 to-indigo-500 flex flex-col items-center justify-center p-4">
+      <div 
+      className="w-75 h-75
+      md:w-100 md:h-100
+      lg:w-150 lg:h-150
+      rounded-[15]
+      flex flex-col items-center justify-center bg-zinc-900">
+        <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-sm space-y-4">
+      <h1 className="text-5xl font-bold mb-20 flex justify-center">Login</h1>
         <input
           {...register("email")}
           type="email"
@@ -36,10 +47,11 @@ export default function LoginPage() {
           placeholder="Пароль"
           className="w-full px-4 py-2 border rounded"
         />
-        <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded">
+        <button type="submit" className="w-full bg-blue-500 hover:bg-blue-700 text-white py-2 rounded active:bg-blue-900">
           Войти
         </button>
       </form>
+      </div>
     </div>
     );
 }

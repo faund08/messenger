@@ -26,7 +26,7 @@ export default function LoginPage() {
 
 
     return (
-         <div className="min-h-screen bg-linear-to-t from-sky-500 to-indigo-500 flex flex-col items-center justify-center p-4">
+         <div className="min-h-screen bg-radial from-white from-7% via-indigo-500 via-30% to-zinc-900 flex flex-col items-center justify-center p-4">
       <div 
       className="w-75 h-75
       md:w-100 md:h-100
@@ -41,13 +41,14 @@ export default function LoginPage() {
           placeholder="Email"
           className="w-full px-4 py-2 border rounded"
         />
+        
         <input
           {...register("password")}
           type="password"
           placeholder="Пароль"
           className="w-full px-4 py-2 border rounded"
         />
-        <button type="submit" className="w-full bg-blue-500 hover:bg-blue-700 text-white py-2 rounded active:bg-blue-900">
+        <button type="submit" className="w-full bg-blue-900 hover:bg-blue-950 text-white py-2 rounded active:bg-blue-900">
           Войти
         </button>
       </form>

@@ -1,7 +1,7 @@
 "use client";
 
-
-import '../styles/global.css'
+import "../styles/global.css";
+import Link from 'next/link'
 
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
@@ -14,8 +14,13 @@ type RegisterForm = {
 };
 
 export default function RegisterPage() {
-    const { register, handleSubmit, watch, formState: { errors } } = useForm<RegisterForm>();
-    const router = useRouter();
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<RegisterForm>();
+  const router = useRouter();
 
   const onSubmit = (data: RegisterForm) => {
     if (data.password !== data.confirmPassword) {
@@ -24,98 +29,68 @@ export default function RegisterPage() {
     }
 
     console.log("Registering:", data);
-    // отправка на сервер
+    // TODO: отправка на сервер
     router.push("/login");
   };
 
   return (
-  <div className="min-h-screen bg-gray-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-    <div className="sm:mx-auto sm:w-full sm:max-w-md">
-      <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-        Create a new account
-      </h2>
-    </div>
-    <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-      <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-        <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-          {/* Username */}
-          <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-              Username
-            </label>
-            <div className="mt-1">
-              <input
-                id="username"
-                {...register('username', { required: 'Username is required' })}
-                className="block w-full rounded-md border-gray-300 shadow-sm sm:text-sm px-3 py-2"
-              />
-              {errors.username && (<p className="text-red-500 text-sm mt-1">{errors.username.message}</p>)}
-            </div>
-          </div>
+    <div className=" min-h-screen bg-radial from-white from-7% via-indigo-500 via-30% to-zinc-900 flex flex-col items-center justify-center p-4">
+      <div className="w-75 h-150 md:w-100 lg:w-150 rounded-[15px] rounded-tl-[100px] rounded-br-[100px] flex flex-col items-center justify-center bg-zinc-900 p-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-sm space-y-4">
+          <h1 className="text-5xl font-bold mb-8 text-center text-white">Register</h1>
 
-          {/* Email */}
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Email address
-            </label>
-            <div className="mt-1">
-              <input
-                id="email"
-                type="email"
-                {...register('email', { required: 'Email is required' })}
-                className="block w-full rounded-md border-gray-300 shadow-sm sm:text-sm px-3 py-2"
-              />
-              {errors.email && (<p className="text-red-500 text-sm mt-1">{errors.email.message}</p>)}
-            </div>
-          </div>
+          <input
+            {...register("username", { required: "Username is required" })}
+            type="text"
+            placeholder="Username"
+            className="w-full px-4 py-2 border rounded"
+          />
+          {errors.username && (
+            <p className="text-red-500 text-sm -mt-2">{errors.username.message}</p>
+          )}
 
-          {/* Password */}
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-              Password
-            </label>
-            <div className="mt-1">
-              <input
-                id="password"
-                type="password"
-                {...register('password', { required: 'Password is required' })}
-                className="block w-full rounded-md border-gray-300 shadow-sm sm:text-sm px-3 py-2"
-              />
-              {errors.password && (<p className="text-red-500 text-sm mt-1">{errors.password.message}</p>)}
-            </div>
-          </div>
+          <input
+            {...register("email", { required: "Email is required" })}
+            type="email"
+            placeholder="Email"
+            className="w-full px-4 py-2 border rounded"
+          />
+          {errors.email && (
+            <p className="text-red-500 text-sm -mt-2">{errors.email.message}</p>
+          )}
 
-          {/* Confirm Password */}
-          <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-              Confirm Password
-            </label>
-            <div className="mt-1">
-              <input
-                id="confirmPassword"
-                type="password"
-                {...register('confirmPassword', {
-                  required: 'Please confirm your password',
-                  validate: value => value === watch('password') || 'Passwords do not match'
-                })}
-                className="block w-full rounded-md border-gray-300 shadow-sm sm:text-sm px-3 py-2"
-              />
-              {errors.confirmPassword && (<p className="text-red-500 text-sm mt-1">{errors.confirmPassword.message}</p>)}
-            </div>
-          </div>
+          <input
+            {...register("password", { required: "Password is required" })}
+            type="password"
+            placeholder="Password"
+            className="w-full px-4 py-2 border rounded"
+          />
+          {errors.password && (
+            <p className="text-red-500 text-sm -mt-2">{errors.password.message}</p>
+          )}
 
-          <div>
-            <button
-              type="submit"
-              className="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-            >
-              Register
-            </button>
-          </div>
+          <input
+            {...register("confirmPassword", {
+              required: "Please confirm your password",
+              validate: (value) => value === watch("password") || "Passwords do not match",
+            })}
+            type="password"
+            placeholder="Confirm password"
+            className="w-full px-4 py-2 border rounded"
+          />
+          {errors.confirmPassword && (
+            <p className="text-red-500 text-sm -mt-2">{errors.confirmPassword.message}</p>
+          )}
+
+          <button
+            type="submit"
+            className="w-full bg-blue-900 hover:bg-blue-950 text-white py-2 rounded active:bg-blue-900"
+          >
+            Register
+          </button>
+          <Link href="/login" className="text-blue-400 flex justify-center hover:underline">Login</Link>
         </form>
       </div>
     </div>
-  </div>
-);
-
+  );
 }

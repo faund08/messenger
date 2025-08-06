@@ -2,26 +2,42 @@
 
 
 import '../styles/global.css';
-import Image from 'next/image'
+import Link from 'next/link'
 
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 
 type LoginForm = {
-    email: string;
+    username: string;
     password: string;
 };
 
 
 
 export default function LoginPage() {
-    const {register, handleSubmit } = useForm<LoginForm>();
+    const {register, handleSubmit, formState: {errors} } = useForm<LoginForm>();
     const router = useRouter();
 
-    const onSubmit = ( data: LoginForm ) => {
-        console.log("Loggining with: ", data);
-        //добавить логин
-        router.push("/profile");
+    const onSubmit = async ( data: LoginForm ) => {
+      try {
+        const res = await fetch('api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+
+        const json = await res.json();
+
+        if (!res.ok) {
+          alert(json.error || 'Login failed');
+          return;
+        }
+
+        alert( 'Login succesful' );
+        router.push('/profile');
+      } catch (error) {
+        alert('Unexpected error')
+      }
     };
 
 
@@ -32,25 +48,33 @@ export default function LoginPage() {
       md:w-100 md:h-100
       lg:w-150 lg:h-150
       rounded-[15]
+      rounded-tr-[100px]
+      rounded-bl-[100px]
       flex flex-col items-center justify-center bg-zinc-900">
         <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-sm space-y-4">
       <h1 className="text-5xl font-bold mb-20 flex justify-center">Login</h1>
         <input
-          {...register("email")}
-          type="email"
-          placeholder="Email"
+          {...register("username", {required: "Username is required" })}
+          type="username"
+          placeholder="Username"
           className="w-full px-4 py-2 border rounded"
         />
-        
+        {errors.username && (
+            <p className="text-red-500 text-sm -mt-2">{errors.username.message}</p>
+          )}
         <input
-          {...register("password")}
+          {...register("password", {required: "Password is required" })}
           type="password"
-          placeholder="Пароль"
+          placeholder="Password"
           className="w-full px-4 py-2 border rounded"
         />
+        {errors.password && (
+            <p className="text-red-500 text-sm -mt-2">{errors.password.message}</p>
+          )}
         <button type="submit" className="w-full bg-blue-900 hover:bg-blue-950 text-white py-2 rounded active:bg-blue-900">
-          Войти
+          Login
         </button>
+        <Link href="/register" className="text-blue-400 flex justify-center hover:underline">Registration</Link>
       </form>
       </div>
     </div>

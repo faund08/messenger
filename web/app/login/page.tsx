@@ -18,27 +18,40 @@ export default function LoginPage() {
     const {register, handleSubmit, formState: {errors} } = useForm<LoginForm>();
     const router = useRouter();
 
-    const onSubmit = async ( data: LoginForm ) => {
-      try {
-        const res = await fetch('api/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        });
+    const onSubmit = async (data: LoginForm) => {
+  try {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
 
-        const json = await res.json();
+    const json = await res.json();
 
-        if (!res.ok) {
-          alert(json.error || 'Login failed');
-          return;
-        }
+    if (!res.ok) {
+      alert(json.error || 'Login failed');
+      return;
+    }
 
-        alert( 'Login succesful' );
-        router.push('/profile');
-      } catch (error) {
-        alert('Unexpected error')
-      }
-    };
+    const token = json.token || json.accessToken;
+    console.log('Server response:', json);
+    if (!token) {
+      alert('No token received');
+      return;
+    }
+
+
+    // console.log('window.auth:', window.auth);
+    // @ts-ignore
+    await window.auth.saveToken(token);
+
+    alert('Login successful');
+    router.push('/profile');
+  } catch (error) {
+    alert('Unexpected error');
+  }
+};
+
 
 
     return (

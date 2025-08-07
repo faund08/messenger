@@ -2,7 +2,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcrypt";
-import clientPromise from '@/lib/mongodb'
+// import clientPromise from '@/lib/mongodb'
 
 
 export async function POST( request: NextRequest ) {
@@ -13,26 +13,26 @@ export async function POST( request: NextRequest ) {
             return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
         }
 
-        const client = await clientPromise;
-        const db = client.db('db-name');
-        const users = db.collection('users');
+        // const client = await clientPromise;
+        // const db = client.db('db-name');
+        // const users = db.collection('users');
 
         
-        const existingUser = await users.findOne({ email });
+        // const existingUser = await users.findOne({ email });
 
-        if (existingUser) {
-            return NextResponse.json({ message: 'User already exist' }, { status: 400 });
-        }
+        // if (existingUser) {
+        //     return NextResponse.json({ message: 'User already exist' }, { status: 400 });
+        // }
 
 
         const hashedPassword = await bcrypt.hash(password, 12);
         
-        await users.insertOne({
-            username,
-            email,
-            password: hashedPassword,
-            createdAt: new Date(),
-        });
+        // await users.insertOne({
+        //     username,
+        //     email,
+        //     password: hashedPassword,
+        //     createdAt: new Date(),
+        // });
 
         return NextResponse.json({ message: "User created" }, { status: 201 });
     } catch (error) {

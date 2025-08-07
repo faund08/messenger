@@ -1,5 +1,11 @@
 import { contextBridge, ipcRenderer } from 'electron'
 
+contextBridge.exposeInMainWorld('auth', {
+  saveToken: (token: string) => ipcRenderer.invoke('auth:saveToken', token),
+  getToken: () => ipcRenderer.invoke('auth:getToken'),
+  clearToken: () => ipcRenderer.invoke('auth:clearToken'),
+});
+
 contextBridge.exposeInMainWorld('api', {
   sendMessege: (channel: string, data: any) => {
     ipcRenderer.send(channel, data);

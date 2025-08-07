@@ -10,7 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "concurrently": "^9.2.0",
-    "cross-env": "^10.0.0"
+    "cross-env": "^10.0.0",
+    "keytar": "^7.9.0"
   },
   "devDependencies": {
     "@types/electron": "^1.6.12",
@@ -18,7 +19,7 @@
     "electron": "^37.2.5",
     "typescript": "^5.9.2"
   },
-   "build": {
+  "build": {
     "appId": "com.messenger.desktop",
     "productName": "Messenger",
     "files": [

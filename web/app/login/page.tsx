@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 
+
 type LoginForm = {
   username: string;
   password: string;
@@ -21,6 +22,7 @@ const saveAuthToken = async (token: string) => {
 };
 
 export default function LoginPage() {
+
   const { register, handleSubmit, formState: { errors } } = useForm<LoginForm>();
   const router = useRouter();
 

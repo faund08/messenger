@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "dev": "electron .",
+    "build": "electron-builder",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -16,7 +18,8 @@
   "devDependencies": {
     "@types/electron": "^1.6.12",
     "@types/node": "^24.1.0",
-    "electron": "^37.2.5",
+    "electron": "^37.2.6",
+    "electron-builder": "^25.0.5",
     "typescript": "^5.9.2"
   },
   "build": {

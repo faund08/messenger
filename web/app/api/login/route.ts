@@ -19,6 +19,8 @@ const fakeUser: User = {
 
 
 export async function POST(request: NextRequest) {
+
+  console.log('Login API called');
     const { username, password } = await request.json();
 
     if ( username !== fakeUser.username) {

@@ -53,9 +53,11 @@ export default function LoginPage() {
 
       alert('Login successful');
       router.push('/profile');
-    } catch (error) {
-      alert('Unexpected error');
-    }
+    } catch (error: any) {
+  alert('Unexpected error: ' + (error.message || error));
+  console.error('Login error:', error);
+}
+
   };
 
   return (

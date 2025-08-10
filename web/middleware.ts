@@ -16,9 +16,9 @@ export function middleware(req: NextRequest) {
         return NextResponse.redirect(new URL('/login', req.url));
     }
 
-    if (isAuthPage && token) {
-        return NextResponse.redirect(new URL('/', req.url));
-    }
+    // if (isAuthPage && token) {
+    //     return NextResponse.redirect(new URL('/', req.url));
+    // }
 
     return NextResponse.next();
 };

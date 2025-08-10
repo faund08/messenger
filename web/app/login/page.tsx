@@ -1,88 +1,166 @@
 "use client";
 
-import '../styles/global.css';
-import Link from 'next/link';
-import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-
+import { useForm } from "react-hook-form";
+import { jwtDecode } from "jwt-decode";
+import Link from "next/link";
 
 type LoginForm = {
   username: string;
   password: string;
 };
 
-const saveAuthToken = async (token: string) => {
-  if (typeof window !== 'undefined' && 'auth' in window && window.auth?.saveToken) {
-    // @ts-ignore – electron
-    await window.auth.saveToken(token);
-  } else {
-    // browser
-    localStorage.setItem('auth-token', token);
-  }
+type JwtPayload = {
+  exp?: number;
+  [key: string]: any;
 };
 
 export default function LoginPage() {
-
-  const { register, handleSubmit, formState: { errors } } = useForm<LoginForm>();
   const router = useRouter();
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem("auth-token") || getCookie("token");
+    if (!token) {
+      setChecking(false);
+      return;
+    }
+
+    try {
+      const decoded = jwtDecode<JwtPayload>(token);
+      const now = Date.now() / 1000;
+
+      if (decoded.exp && decoded.exp > now) {
+        router.replace("/profile");
+      } else {
+        clearAuth();
+        setChecking(false);
+      }
+    } catch {
+      clearAuth();
+      setChecking(false);
+    }
+  }, [router]);
+
+  function clearAuth() {
+    localStorage.removeItem("auth-token");
+    deleteCookie("token");
+  }
+
+  function getCookie(name: string): string | null {
+    if (typeof document === "undefined") return null;
+    const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+    return match ? match[2] : null;
+  }
+
+  function deleteCookie(name: string) {
+    if (typeof document === "undefined") return;
+    document.cookie = name + "=; Max-Age=0; path=/";
+  }
+
+  if (checking) {
+    return (
+      <div className="flex items-center justify-center h-screen text-xl">
+        Checking authentication...
+      </div>
+    );
+  }
+
+  return <LoginForm router={router} clearAuth={clearAuth} />;
+}
+
+function LoginForm({
+  router,
+  clearAuth,
+}: {
+  router: ReturnType<typeof useRouter>;
+  clearAuth: () => void;
+}) {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginForm>();
+  const [loading, setLoading] = useState(false);
 
   const onSubmit = async (data: LoginForm) => {
+    setLoading(true);
     try {
-      const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
 
       const json = await res.json();
 
       if (!res.ok) {
-        alert(json.error || 'Login failed');
+        alert(json.error || "Login failed");
+        setLoading(false);
         return;
       }
 
       const token = json.token || json.accessToken;
-      console.log('Server response:', json);
       if (!token) {
-        alert('No token received');
+        alert("No token received");
+        setLoading(false);
         return;
       }
 
-      // Вместо window.auth.saveToken теперь:
-      await saveAuthToken(token);
+      document.cookie = `token=${token}; path=/; max-age=${
+        60 * 60 * 24 * 7
+      }`;
+      localStorage.setItem("auth-token", token);
 
-      alert('Login successful');
-      router.push('/profile');
+      alert("Login successful");
+      router.push("/profile");
     } catch (error: any) {
-  alert('Unexpected error: ' + (error.message || error));
-  console.error('Login error:', error);
-}
-
+      alert("Unexpected error: " + (error.message || error));
+      console.error("Login error:", error);
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-radial from-white from-7% via-indigo-500 via-30% to-zinc-900 flex flex-col items-center justify-center p-4">
-      <div className="w-75 h-75 md:w-100 md:h-100 lg:w-150 lg:h-150 rounded-[15] rounded-tr-[100px] rounded-bl-[100px] flex flex-col items-center justify-center bg-zinc-900">
-        <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-sm space-y-4">
+      <div className="w-75 h-75 md:w-100 md:h-100 lg:w-150 lg:h-150 rounded-[15px] rounded-tr-[100px] rounded-bl-[100px] flex flex-col items-center justify-center bg-zinc-900">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="w-full max-w-sm space-y-4"
+        >
           <h1 className="text-5xl font-bold mb-20 flex justify-center">Login</h1>
           <input
             {...register("username", { required: "Username is required" })}
-            type="username"
+            type="text"
             placeholder="Username"
             className="w-full px-4 py-2 border rounded"
           />
-          {errors.username && <p className="text-red-500 text-sm -mt-2">{errors.username.message}</p>}
+          {errors.username && (
+            <p className="text-red-500 text-sm -mt-2">{errors.username.message}</p>
+          )}
           <input
             {...register("password", { required: "Password is required" })}
             type="password"
             placeholder="Password"
             className="w-full px-4 py-2 border rounded"
           />
-          {errors.password && <p className="text-red-500 text-sm -mt-2">{errors.password.message}</p>}
-          <button type="submit" className="w-full bg-blue-900 hover:bg-blue-950 text-white py-2 rounded active:bg-blue-900">
-            Login
+          {errors.password && (
+            <p className="text-red-500 text-sm -mt-2">{errors.password.message}</p>
+          )}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-900 hover:bg-blue-950 text-white py-2 rounded active:bg-blue-900"
+          >
+            {loading ? "Logging in..." : "Login"}
           </button>
-          <Link href="/register" className="text-blue-400 flex justify-center hover:underline">Registration</Link>
+          <Link
+            href="/register"
+            className="text-blue-400 flex justify-center hover:underline"
+          >
+            Registration
+          </Link>
         </form>
       </div>
     </div>

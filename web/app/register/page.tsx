@@ -13,14 +13,14 @@ type RegisterForm = {
   confirmPassword: string;
 };
 
-// Функция сохранения токена: пытаемся сохранить через electron bridge, иначе в localStorage
+// функция сохранения токена: пытаемся сохранить через electron bridge, иначе в localStorage
 const saveAuthToken = async (token: string) => {
   // @ts-ignore
   if (typeof window !== "undefined" && window.auth?.saveToken) {
     // 👇 Сохраняем токен через keytar в electron
     await window.auth.saveToken(token);
   } else {
-    // 👇 Локальное сохранение для браузера
+    // локальное сохранение для браузера
     localStorage.setItem("auth-token", token);
   }
 };

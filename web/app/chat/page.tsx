@@ -7,7 +7,7 @@ export default function ChatPage() {
   const user = {
     id: 1,
     username: "kuroyami",
-    avatar: "/avatar.jpg",
+    avatar: "",
     bio: "Fullstack developer"
   };
 

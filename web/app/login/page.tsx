@@ -32,7 +32,7 @@ export default function LoginPage() {
       const now = Date.now() / 1000;
 
       if (decoded.exp && decoded.exp > now) {
-        router.replace("/profile");
+        router.replace("/profile/[id]");
       } else {
         clearAuth();
         setChecking(false);
@@ -114,7 +114,7 @@ function LoginForm({
       localStorage.setItem("auth-token", token);
 
       alert("Login successful");
-      router.push("/profile");
+      router.push("/profile/[id]");
     } catch (error: any) {
       alert("Unexpected error: " + (error.message || error));
       console.error("Login error:", error);

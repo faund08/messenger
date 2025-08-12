@@ -50,7 +50,9 @@ export default function LoginPage() {
 
   function getCookie(name: string): string | null {
     if (typeof document === "undefined") return null;
-    const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+    const match = document.cookie.match(
+      new RegExp("(^| )" + name + "=([^;]+)")
+    );
     return match ? match[2] : null;
   }
 
@@ -108,13 +110,11 @@ function LoginForm({
         return;
       }
 
-      document.cookie = `token=${token}; path=/; max-age=${
-        60 * 60 * 24 * 7
-      }`;
+      document.cookie = `token=${token}; path=/; max-age=${60 * 60 * 24 * 7}`;
       localStorage.setItem("auth-token", token);
 
       alert("Login successful");
-      router.push("/profile/[id]");
+      router.push(`/profile/${data.username}`);
     } catch (error: any) {
       alert("Unexpected error: " + (error.message || error));
       console.error("Login error:", error);
@@ -129,7 +129,9 @@ function LoginForm({
           onSubmit={handleSubmit(onSubmit)}
           className="w-full max-w-sm space-y-4"
         >
-          <h1 className="text-5xl font-bold mb-20 flex justify-center">Login</h1>
+          <h1 className="text-5xl font-bold mb-20 flex justify-center">
+            Login
+          </h1>
           <input
             {...register("username", { required: "Username is required" })}
             type="text"
@@ -137,7 +139,9 @@ function LoginForm({
             className="w-full px-4 py-2 border rounded"
           />
           {errors.username && (
-            <p className="text-red-500 text-sm -mt-2">{errors.username.message}</p>
+            <p className="text-red-500 text-sm -mt-2">
+              {errors.username.message}
+            </p>
           )}
           <input
             {...register("password", { required: "Password is required" })}
@@ -146,7 +150,9 @@ function LoginForm({
             className="w-full px-4 py-2 border rounded"
           />
           {errors.password && (
-            <p className="text-red-500 text-sm -mt-2">{errors.password.message}</p>
+            <p className="text-red-500 text-sm -mt-2">
+              {errors.password.message}
+            </p>
           )}
           <button
             type="submit"

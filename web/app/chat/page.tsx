@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from 'react';
-import ProfileSidebar from '@/components/ProfileSidebar';
+import { useState } from "react";
+import ProfileSidebar from "@/components/ProfileSidebar";
 
 export default function ChatPage() {
   const user = {
     id: 1,
     username: "kuroyami",
     avatar: "",
-    bio: "Fullstack developer"
+    bio: "Fullstack developer",
   };
 
   const [selectedUser, setSelectedUser] = useState<any>(null);
@@ -23,7 +23,11 @@ export default function ChatPage() {
           onClick={() => openProfile(user)}
           className="flex items-center gap-2 cursor-pointer"
         >
-          <img src={user.avatar} alt={user.username} className="w-10 h-10 rounded-full" />
+          <img
+            src={user.avatar}
+            alt={user.username}
+            className="w-10 h-10 rounded-full"
+          />
           <span>{user.username}</span>
         </div>
       </div>

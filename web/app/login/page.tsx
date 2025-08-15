@@ -114,7 +114,8 @@ function LoginForm({
       localStorage.setItem("auth-token", token);
 
       alert("Login successful");
-      router.push(`/profile/${data.username}`);
+      // router.push(`/profile/${data.username}`);
+      router.push(`/chats`);
     } catch (error: any) {
       alert("Unexpected error: " + (error.message || error));
       console.error("Login error:", error);

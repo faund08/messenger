@@ -19,17 +19,156 @@ export default function ChatPage() {
 
   // Моковые данные чатов
   const mockChats = [
-    { id: 1, username: "alice", lastMessage: "Привет!" },
-    { id: 2, username: "bob", lastMessage: "Как дела?" },
-    { id: 3, username: "charlie", lastMessage: "Встречаемся завтра" },
-    { id: 4, username: "dave", lastMessage: "Посмотри проект" },
+    {
+      id: 1,
+      username: "alice",
+      lastMessage: "Привет!",
+      date: "2025-08-17 10:15",
+    },
+    {
+      id: 2,
+      username: "bob",
+      lastMessage: "Как дела?",
+      date: "2025-08-17 09:50",
+    },
+    {
+      id: 3,
+      username: "charlie",
+      lastMessage: "Встречаемся завтра",
+      date: "2025-08-16 18:30",
+    },
+    {
+      id: 4,
+      username: "dave",
+      lastMessage: "Посмотри проект",
+      date: "2025-08-16 12:45",
+    },
+    {
+      id: 4,
+      username: "dave",
+      lastMessage: "Посмотри проект",
+      date: "2025-08-16 12:45",
+    },
+    {
+      id: 4,
+      username: "dave",
+      lastMessage: "Посмотри проект",
+      date: "2025-08-16 12:45",
+    },
+    {
+      id: 4,
+      username: "dave",
+      lastMessage: "Посмотри проект",
+      date: "2025-08-16 12:45",
+    },
+    {
+      id: 4,
+      username: "dave",
+      lastMessage: "Посмотри проект",
+      date: "2025-08-16 12:45",
+    },
+    {
+      id: 4,
+      username: "dave",
+      lastMessage: "Посмотри проект",
+      date: "2025-08-16 12:45",
+    },
+    {
+      id: 4,
+      username: "dave",
+      lastMessage: "Посмотри проект",
+      date: "2025-08-16 12:45",
+    },
+    {
+      id: 4,
+      username: "dave",
+      lastMessage: "Посмотри проект",
+      date: "2025-08-16 12:45",
+    },
+    {
+      id: 4,
+      username: "dave",
+      lastMessage: "Посмотри проект",
+      date: "2025-08-16 12:45",
+    },
+    {
+      id: 4,
+      username: "dave",
+      lastMessage: "Посмотри проект",
+      date: "2025-08-16 12:45",
+    },
+    {
+      id: 4,
+      username: "dave",
+      lastMessage: "Посмотри проект",
+      date: "2025-08-16 12:45",
+    },
+    {
+      id: 4,
+      username: "dave",
+      lastMessage: "Посмотри проект",
+      date: "2025-08-16 12:45",
+    },
+    {
+      id: 4,
+      username: "dave",
+      lastMessage: "Посмотри проект",
+      date: "2025-08-16 12:45",
+    },
+    {
+      id: 4,
+      username: "dave",
+      lastMessage: "Посмотри проект",
+      date: "2025-08-16 12:45",
+    },
+    {
+      id: 4,
+      username: "dave",
+      lastMessage: "Посмотри проект",
+      date: "2025-08-16 12:45",
+    },
+    {
+      id: 4,
+      username: "dave",
+      lastMessage: "Посмотри проект",
+      date: "2025-08-16 12:45",
+    },
+    {
+      id: 4,
+      username: "dave",
+      lastMessage: "Посмотри проект",
+      date: "2025-08-16 12:45",
+    },
+    {
+      id: 4,
+      username: "dave",
+      lastMessage: "Посмотри проект",
+      date: "2025-08-16 12:45",
+    },
+    {
+      id: 4,
+      username: "dave",
+      lastMessage: "Посмотри проект",
+      date: "2025-08-16 12:45",
+    },
+    {
+      id: 4,
+      username: "dave",
+      lastMessage: "Посмотри проект",
+      date: "2025-08-16 12:45",
+    },
+    {
+      id: 4,
+      username: "dave",
+      lastMessage: "Посмотри проект",
+      date: "2025-08-16 12:45",
+    },
   ];
 
   return (
-    <div className="relative h-screen w-85 flex bg-zinc-700">
+    <div className="relative h-screen w-85 flex bg-zinc-700 overflow-scroll overflow-x-clip">
       <div className="flex-1 p-4">
-
-            {/* ПЕРЕКИНУТЬ ЭТУ ЧАСТЬ КОДА В КОМПОНЕНТ С ПАНЕЛЬЮ ИНСТРУМЕНТОВ
+        {/* ПЕРЕКИНУТЬ ЭТУ ЧАСТЬ КОДА В КОМПОНЕНТ С ПАНЕЛЬЮ ИНСТРУМЕНТОВ
                 И ИМПОРТИРОВАННЫЙ КОД ВСТАВИТЬ СЮДА*/}
         {/* <div 
           onClick={() => openProfile(user)}
@@ -43,22 +182,27 @@ export default function ChatPage() {
           <span>{user.username}</span>
         </div> */}
 
-
         <div className="flex flex-col gap-2">
-          {mockChats.map((chat) => (
-            <div
-              key={chat.id}
-              className="flex items-center justify-between p-2 rounded hover:bg-zinc-600 cursor-pointer"
-            >
-              <span className="text-white">{chat.username}</span>
-              <span className="text-gray-400 text-sm">{chat.lastMessage}</span>
-            </div>
-          ))}
+          {[...mockChats]
+            .sort(
+              (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+            )
+            .map((chat) => (
+              <div
+                key={chat.id}
+                className="flex items-center justify-between p-2 rounded hover:bg-zinc-600 cursor-pointer"
+              >
+                <span className="text-white">{chat.username}</span>
+                <span className="text-gray-400 text-sm">
+                  {chat.lastMessage}
+                </span>
+                <span className="text-gray-400 text-xs ml-2">{chat.date}</span>{" "}
+              </div>
+            ))}
         </div>
       </div>
 
-
-            {/* И ЭТУ ЧАСТЬ ТУДА ЖЕ */}
+      {/* И ЭТУ ЧАСТЬ ТУДА ЖЕ */}
       {/* {selectedUser && (
         <ProfileSidebar user={selectedUser} onClose={closeProfile} />
       )} */}

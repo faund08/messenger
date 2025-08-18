@@ -13,6 +13,7 @@ export default function ChatPage() {
   };
 
   const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [selectedChat, setSelectedChat] = useState<any>(null);
 
   const openProfile = (user: any) => setSelectedUser(user);
   const closeProfile = () => setSelectedUser(null);
@@ -46,8 +47,9 @@ export default function ChatPage() {
   ];
 
   return (
-    <div className="relative h-screen w-85 flex bg-zinc-700 overflow-scroll overflow-x-clip">
-      <div className="flex-1 p-4">
+    <div className="relative h-screen w-full flex bg-zinc-700 overflow-hidden">
+      {/* Список чатов */}
+      <div className="w-1/4 p-4 overflow-y-auto">
         {/* ПЕРЕКИНУТЬ ЭТУ ЧАСТЬ КОДА В КОМПОНЕНТ С ПАНЕЛЬЮ ИНСТРУМЕНТОВ
                 И ИМПОРТИРОВАННЫЙ КОД ВСТАВИТЬ СЮДА*/}
         {/* <div 
@@ -65,21 +67,60 @@ export default function ChatPage() {
         <div className="flex flex-col gap-2">
           {[...mockChats]
             .sort(
-              (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+              (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
             )
             .map((chat) => (
               <div
                 key={chat.id}
-                className="flex items-center justify-between p-2 rounded hover:bg-zinc-600 cursor-pointer"
+                onClick={() => setSelectedChat(chat)}
+                className={`flex items-center justify-between p-2 rounded cursor-pointer ${
+                  selectedChat?.id === chat.id
+                    ? "bg-zinc-600"
+                    : "hover:bg-zinc-600"
+                }`}
               >
                 <span className="text-white">{chat.username}</span>
                 <span className="text-gray-400 text-sm">
                   {chat.lastMessage}
                 </span>
-                <span className="text-gray-400 text-xs ml-2">{chat.date}</span>{" "}
+                <span className="text-gray-400 text-xs ml-2">{chat.date}</span>
               </div>
             ))}
         </div>
+      </div>
+
+      {/* Окно чата */}
+      <div className="flex-1 flex flex-col p-1">
+        {selectedChat ? (
+          <div className="flex-1 flex flex-col bg-zinc-800 rounded-20px] overflow-hidden">
+            <div className="flex items-center justify-between p-2 border-b border-zinc-600">
+              <span className="font-bold text-white">
+                {selectedChat.username}
+              </span>
+              <button
+                onClick={() => setSelectedChat(null)}
+                className="text-sm text-red-400 hover:text-red-300"
+              >
+                Закрыть
+              </button>
+            </div>
+            <div className="flex-1 p-4 overflow-y-auto">
+              <p className="text-gray-300">Чат с {selectedChat.username}</p>
+              {/* Тут можно отрисовать сообщения */}
+            </div>
+            <div className="p-2 border-t border-zinc-600">
+              <input
+                type="text"
+                placeholder="Введите сообщение..."
+                className="w-full p-2 rounded bg-zinc-900 text-white"
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center justify-center flex-1 text-gray-400">
+            Выберите чат слева
+          </div>
+        )}
       </div>
 
       {/* И ЭТУ ЧАСТЬ ТУДА ЖЕ */}

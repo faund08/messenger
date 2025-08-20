@@ -14,20 +14,25 @@ export default function ChatPage() {
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [selectedChat, setSelectedChat] = useState<any>(null);
   const [messageText, setMessageText] = useState("");
+  const [attachedFiles, setAttachedFiles] = useState<File[]>([]); // 👈 новое состояние
   const [mockChats, setMockChats] = useState<any[]>([
     {
       id: 1,
       username: "alice",
       lastMessage: "Привет!",
       date: "2025-08-17 10:15",
-      messages: [{ id: 1, sender: "alice", text: "Привет!", date: "10:15" }],
+      messages: [
+        { id: 1, sender: "alice", text: "Привет!", date: "10:15", files: [] },
+      ],
     },
     {
       id: 2,
       username: "bob",
       lastMessage: "Как дела?",
       date: "2025-08-17 09:50",
-      messages: [{ id: 1, sender: "bob", text: "Как дела?", date: "09:50" }],
+      messages: [
+        { id: 1, sender: "bob", text: "Как дела?", date: "09:50", files: [] },
+      ],
     },
     {
       id: 3,
@@ -50,9 +55,21 @@ export default function ChatPage() {
   const openProfile = (user: any) => setSelectedUser(user);
   const closeProfile = () => setSelectedUser(null);
 
+  // drag'n'drop
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const files = Array.from(e.dataTransfer.files);
+    setAttachedFiles((prev) => [...prev, ...files]);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+  };
+
   // Отправка сообщения
   const sendMessage = () => {
-    if (!messageText.trim() || !selectedChat) return;
+    if ((!messageText.trim() && attachedFiles.length === 0) || !selectedChat)
+      return;
 
     const now = new Date();
     const newMsg = {
@@ -60,12 +77,18 @@ export default function ChatPage() {
       sender: user.username,
       text: messageText,
       date: now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      files: attachedFiles.map((f) => ({
+        name: f.name,
+        type: f.type,
+        url: URL.createObjectURL(f), // 👈 для отображения
+      })),
+      // сохраняем имена файлов
     };
 
     const updatedChat = {
       ...selectedChat,
       messages: [...selectedChat.messages, newMsg],
-      lastMessage: messageText,
+      lastMessage: messageText || `📎 ${attachedFiles.length} файл(ов)`,
       date: now.toISOString(), // для сортировки используем ISO
     };
 
@@ -75,6 +98,7 @@ export default function ChatPage() {
     );
 
     setMessageText("");
+    setAttachedFiles([]); // очищаем после отправки
   };
 
   // Автопрокрутка к последнему сообщению
@@ -166,6 +190,26 @@ export default function ChatPage() {
                     }`}
                   >
                     <p>{msg.text}</p>
+                    {msg.files?.length > 0 && (
+                      <div className="mt-1 space-y-1">
+                        {msg.files.map((file: any, i: number) => (
+                          <div key={i}>
+                            {file.type?.startsWith("image/") ? (
+                              <img
+                                src={file.url}
+                                alt={file.name}
+                                className="max-w-[200px] rounded"
+                              />
+                            ) : (
+                              <div className="text-xs text-gray-300 flex items-center gap-1">
+                                📎 {file.name}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
                     <span className="text-xs text-gray-300">{msg.date}</span>
                   </div>
                 </div>
@@ -173,8 +217,34 @@ export default function ChatPage() {
               <div ref={messagesEndRef} />
             </div>
 
+            {/* Прикрепленные файлы */}
+            {attachedFiles.length > 0 && (
+              <div className="p-2 bg-zinc-900 text-white text-sm flex gap-2 flex-wrap">
+                {attachedFiles.map((file, i) => (
+                  <div key={i} className="relative">
+                    {/* Если файл картинка — показываем превью */}
+                    {file.type.startsWith("image/") ? (
+                      <img
+                        src={URL.createObjectURL(file)}
+                        alt={file.name}
+                        className="w-20 h-20 object-cover rounded"
+                      />
+                    ) : (
+                      <span className="px-2 py-1 bg-zinc-700 rounded inline-block">
+                        📎 {file.name}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
             {/* Ввод */}
-            <div className="p-2 border-t border-zinc-600 flex gap-2">
+            <div
+              className="p-2 border-t border-zinc-600 flex gap-2"
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+            >
               <input
                 type="text"
                 value={messageText}

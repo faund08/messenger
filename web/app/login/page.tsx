@@ -115,7 +115,7 @@ function LoginForm({
 
       alert("Login successful");
       // router.push(`/profile/${data.username}`);
-      router.push(`/chats`);
+      router.push(`/channels`);
     } catch (error: any) {
       alert("Unexpected error: " + (error.message || error));
       console.error("Login error:", error);

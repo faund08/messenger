@@ -32,7 +32,16 @@ export default function LoginPage() {
       const now = Date.now() / 1000;
 
       if (decoded.exp && decoded.exp > now) {
-        router.replace("/profile/[id]");
+        const userId = localStorage.getItem("user-id");
+        if (userId) {
+          // Если токен валиден и есть id, редиректим
+          router.replace(`/profile/${userId}`);
+          return; // не нужно setChecking(false), редирект уводит со страницы
+        } else {
+          // Если id нет, сбрасываем токен и показываем форму логина
+          clearAuth();
+          setChecking(false);
+        }
       } else {
         clearAuth();
         setChecking(false);
@@ -45,6 +54,7 @@ export default function LoginPage() {
 
   function clearAuth() {
     localStorage.removeItem("auth-token");
+    localStorage.removeItem("user-id");
     deleteCookie("token");
   }
 
@@ -104,18 +114,21 @@ function LoginForm({
       }
 
       const token = json.token || json.accessToken;
-      if (!token) {
-        alert("No token received");
+      const user = json.user;
+      if (!token || !user) {
+        alert("No token or user info received");
         setLoading(false);
         return;
       }
 
+      // Сохраняем токен и id пользователя
       document.cookie = `token=${token}; path=/; max-age=${60 * 60 * 24 * 7}`;
       localStorage.setItem("auth-token", token);
+      localStorage.setItem("user-id", user.id);
+      localStorage.setItem("user-username", user.username);
 
       alert("Login successful");
-      // router.push(`/profile/${data.username}`);
-      router.push(`/channels`);
+      router.push(`/profile/${user.id}`);
     } catch (error: any) {
       alert("Unexpected error: " + (error.message || error));
       console.error("Login error:", error);

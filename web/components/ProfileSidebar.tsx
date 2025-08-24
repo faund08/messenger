@@ -6,9 +6,11 @@ import { useRouter } from "next/navigation";
 export default function ProfileSidebar({
   user: initialUser,
   onClose,
+  isOwner,
 }: {
   user: any;
   onClose: () => void;
+  isOwner: boolean;
 }) {
   const [user, setUser] = useState(() => {
     if (typeof window !== "undefined") {
@@ -18,25 +20,27 @@ export default function ProfileSidebar({
     return initialUser;
   });
 
+  const [username, setUsername] = useState(user.username);
+  const [password, setPassword] = useState("");
+
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   function deleteCookie(name: string) {
-  document.cookie = name + "=; Max-Age=0; path=/";
-}
+    document.cookie = name + "=; Max-Age=0; path=/";
+  }
 
-const handleLogout = async () => {
-  await fetch("/api/logout", { method: "POST" });
-  localStorage.removeItem("auth-token");  // ключ из login
-  localStorage.removeItem("token");       // на всякий случай
-  deleteCookie("token");                   // очистить cookie
-  setUser(null);
-  router.push("/login");
-};
-
+  const handleLogout = async () => {
+    await fetch("/api/logout", { method: "POST" });
+    localStorage.removeItem("auth-token");
+    localStorage.removeItem("token");
+    deleteCookie("token");
+    setUser(null);
+    router.push("/login");
+  };
 
   const handleAvatarClick = () => {
-    fileInputRef.current?.click();
+    if (isOwner) fileInputRef.current?.click();
   };
 
   const handleFileChange = async (
@@ -64,6 +68,24 @@ const handleLogout = async () => {
     }
   };
 
+  const handleSaveProfile = async () => {
+    try {
+      const res = await fetch("/api/update-profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (!res.ok) throw new Error("Update failed");
+
+      setUser((prev) => ({ ...prev, username }));
+      setPassword("");
+      alert("Profile updated!");
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   if (!user) return null;
 
   return (
@@ -85,13 +107,15 @@ const handleLogout = async () => {
             alt="Avatar"
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-sm">
-            <img
-              src="/upload-avatar.svg"
-              alt="upload"
-              className="h-15 w-15 opacity-75"
-            />
-          </div>
+          {isOwner && (
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-sm">
+              <img
+                src="/upload-avatar.svg"
+                alt="upload"
+                className="h-15 w-15 opacity-75"
+              />
+            </div>
+          )}
         </div>
 
         <input
@@ -102,18 +126,45 @@ const handleLogout = async () => {
           accept="image/*"
         />
 
-        <h2 className="text-lg font-bold">@{user.username}</h2>
-        <p className="text-gray-400 mt-2">{user.bio}</p>
+        {isOwner ? (
+          <>
+            <input
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="text-lg font-bold text-center mb-2 bg-zinc-800 text-white rounded p-1"
+            />
+            <input
+              type="password"
+              placeholder="New password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="text-sm text-center mb-2 bg-zinc-800 text-white rounded p-1"
+            />
+            <button
+              className="bg-indigo-500 hover:bg-indigo-700 text-white rounded px-4 py-1"
+              onClick={handleSaveProfile}
+            >
+              Save
+            </button>
+          </>
+        ) : (
+          <>
+            <h2 className="text-lg font-bold">@{user.username}</h2>
+            <p className="text-gray-400 mt-2">{user.bio}</p>
+          </>
+        )}
       </div>
 
-      <div className="mt-auto flex justify-center">
-        <button
-          className="h-10 w-50 rounded-[30] bg-indigo-500 hover:bg-indigo-700 active:bg-indigo-900"
-          onClick={handleLogout}
-        >
-          Log-out
-        </button>
-      </div>
+      {isOwner && (
+        <div className="mt-auto flex justify-center">
+          <button
+            className="h-10 w-50 rounded-[30] bg-indigo-500 hover:bg-indigo-700 active:bg-indigo-900"
+            onClick={handleLogout}
+          >
+            Log-out
+          </button>
+        </div>
+      )}
     </div>
   );
 }

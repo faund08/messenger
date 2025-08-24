@@ -8,20 +8,23 @@ export default function ProfilePage() {
   const { id } = useParams() as { id: string };
   const router = useRouter();
 
-  const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState<{ id: string } | null>(null);
 
   useEffect(() => {
     const storedToken = localStorage.getItem("auth-token");
-    if (!storedToken) {
+    const storedUserId = localStorage.getItem("user-id");
+
+    if (!storedToken || !storedUserId) {
       router.replace("/login");
-    } else {
-      setToken(storedToken);
-      setLoading(false);
+      return;
     }
+
+    setCurrentUser({ id: storedUserId });
+    setLoading(false);
   }, [router]);
 
-  if (loading) return null; // Или спиннер
+  if (loading) return null; // или спиннер
 
   const user = {
     id,
@@ -34,5 +37,7 @@ export default function ProfilePage() {
     router.back();
   };
 
-  return <ProfileSidebar user={user} onClose={closeProfile} />;
+  const isOwner = currentUser?.id === user.id;
+
+  return <ProfileSidebar user={user} onClose={closeProfile} isOwner={isOwner} />;
 }

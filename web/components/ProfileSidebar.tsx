@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export default function ProfileSidebar({
@@ -12,19 +12,25 @@ export default function ProfileSidebar({
   onClose: () => void;
   isOwner: boolean;
 }) {
-  const [user, setUser] = useState(() => {
-    if (typeof window !== "undefined") {
-      const savedAvatar = localStorage.getItem("avatarUrl");
-      return { ...initialUser, avatar: savedAvatar || initialUser.avatar };
-    }
-    return initialUser;
-  });
-
-  const [username, setUsername] = useState(user.username);
+  const [user, setUser] = useState<any>(null);
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [mounted, setMounted] = useState(false);
 
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    // Инициализация только на клиенте
+    const savedAvatar = localStorage.getItem("avatarUrl");
+    const hydratedUser = {
+      ...initialUser,
+      avatar: savedAvatar || initialUser.avatar,
+    };
+    setUser(hydratedUser);
+    setUsername(hydratedUser.username);
+    setMounted(true);
+  }, [initialUser]);
 
   function deleteCookie(name: string) {
     document.cookie = name + "=; Max-Age=0; path=/";
@@ -57,7 +63,6 @@ export default function ProfileSidebar({
         method: "POST",
         body: formData,
       });
-
       if (!res.ok) throw new Error("Upload failed");
 
       const data = await res.json();
@@ -75,7 +80,6 @@ export default function ProfileSidebar({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
-
       if (!res.ok) throw new Error("Update failed");
 
       setUser((prev) => ({ ...prev, username }));
@@ -86,7 +90,7 @@ export default function ProfileSidebar({
     }
   };
 
-  if (!user) return null;
+  if (!mounted || !user) return null;
 
   return (
     <div className="fixed right-0 top-0 h-screen w-[350px] bg-zinc-900 shadow-lg p-4 z-50 flex flex-col">

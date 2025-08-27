@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { io, Socket } from "socket.io-client";
 import ProfileSidebar from "@/components/ProfileSidebar";
+import { set } from "react-hook-form";
 
 export default function ChatPage() {
   const user = {
@@ -67,39 +69,101 @@ export default function ChatPage() {
   };
 
   // Отправка сообщения
+
   const sendMessage = () => {
     if ((!messageText.trim() && attachedFiles.length === 0) || !selectedChat)
       return;
 
     const now = new Date();
     const newMsg = {
-      id: selectedChat.messages.length + 1,
+      id: selectedChat.messages.lenght + 1,
+      chatId: selectedChat.id,
       sender: user.username,
       text: messageText,
       date: now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       files: attachedFiles.map((f) => ({
         name: f.name,
         type: f.type,
-        url: URL.createObjectURL(f), // 👈 для отображения
+        url: URL.createObjectURL(f),
       })),
-      // сохраняем имена файлов
     };
 
     const updatedChat = {
       ...selectedChat,
       messages: [...selectedChat.messages, newMsg],
-      lastMessage: messageText || `📎 ${attachedFiles.length} файл(ов)`,
-      date: now.toISOString(), // для сортировки используем ISO
+      lastMessage: messageText || `📎 ${attachedFiles.length} files`,
+      date: now.toISOString(),
     };
-
     setSelectedChat(updatedChat);
     setMockChats((prev) =>
-      prev.map((chat) => (chat.id === updatedChat.id ? updatedChat : chat))
-    );
+      prev.map((chat) => chat.id === updatedChat.id ? updatedChat : chat)
+  );
+  
+    //sending to server
+    socketRef.current?.emit("message:new", newMsg);
 
     setMessageText("");
-    setAttachedFiles([]); // очищаем после отправки
-  };
+    setAttachedFiles([]);
+  }
+
+  // const sendMessage = () => {
+  //   if ((!messageText.trim() && attachedFiles.length === 0) || !selectedChat)
+  //     return;
+
+  //   const now = new Date();
+  //   const newMsg = {
+  //     id: selectedChat.messages.length + 1,
+  //     sender: user.username,
+  //     text: messageText,
+  //     date: now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+  //     files: attachedFiles.map((f) => ({
+  //       name: f.name,
+  //       type: f.type,
+  //       url: URL.createObjectURL(f), // 👈 для отображения
+  //     })),
+  //     // сохраняем имена файлов
+  //   };
+
+  //   const updatedChat = {
+  //     ...selectedChat,
+  //     messages: [...selectedChat.messages, newMsg],
+  //     lastMessage: messageText || `📎 ${attachedFiles.length} файл(ов)`,
+  //     date: now.toISOString(), // для сортировки используем ISO
+  //   };
+
+  //   setSelectedChat(updatedChat);
+  //   setMockChats((prev) =>
+  //     prev.map((chat) => (chat.id === updatedChat.id ? updatedChat : chat))
+  //   );
+
+  //   setMessageText("");
+  //   setAttachedFiles([]); // очищаем после отправки
+  // };
+
+  const socketRef = useRef<Socket | null>(null);
+
+  useEffect(() => {
+    socketRef.current = io("http://localhost:4000");
+
+    socketRef.current.on("connect", () => {
+      console.log("connected:", socketRef.current?.id);
+    });
+
+    socketRef.current.on("message:new", (data) => {
+      //updating chat
+      setMockChats((prev) =>
+        prev.map((chat) =>
+          chat.id === data.chatId
+            ? { ...chat, messages: [...chat.messages, data] }
+            : chat
+        )
+      );
+    });
+
+    return () => {
+      socketRef.current?.disconnect();
+    };
+  }, []);
 
   // Автопрокрутка к последнему сообщению
   useEffect(() => {

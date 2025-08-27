@@ -128,7 +128,7 @@ function LoginForm({
       localStorage.setItem("user-username", user.username);
 
       alert("Login successful");
-      router.push(`/profile/${user.id}`);
+      router.push(`/chats`);
     } catch (error: any) {
       alert("Unexpected error: " + (error.message || error));
       console.error("Login error:", error);

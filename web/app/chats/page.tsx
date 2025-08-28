@@ -15,6 +15,8 @@ export default function ChatPage() {
 
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [selectedChat, setSelectedChat] = useState<any>(null);
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [editingText, setEditingText] = useState("");
   const [messageText, setMessageText] = useState("");
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]); // 👈 новое состояние
   const [mockChats, setMockChats] = useState<any[]>([
@@ -68,15 +70,14 @@ export default function ChatPage() {
     e.preventDefault();
   };
 
-  // Отправка сообщения
-
+  // send message
   const sendMessage = () => {
     if ((!messageText.trim() && attachedFiles.length === 0) || !selectedChat)
       return;
 
     const now = new Date();
     const newMsg = {
-      id: selectedChat.messages.lenght + 1,
+      id: crypto.randomUUID(), // 👈 уникальный id, стабильный на клиенте
       chatId: selectedChat.id,
       sender: user.username,
       text: messageText,
@@ -94,51 +95,18 @@ export default function ChatPage() {
       lastMessage: messageText || `📎 ${attachedFiles.length} files`,
       date: now.toISOString(),
     };
+
     setSelectedChat(updatedChat);
     setMockChats((prev) =>
-      prev.map((chat) => chat.id === updatedChat.id ? updatedChat : chat)
-  );
-  
-    //sending to server
+      prev.map((chat) => (chat.id === updatedChat.id ? updatedChat : chat))
+    );
+
+    // send to server
     socketRef.current?.emit("message:new", newMsg);
 
     setMessageText("");
     setAttachedFiles([]);
-  }
-
-  // const sendMessage = () => {
-  //   if ((!messageText.trim() && attachedFiles.length === 0) || !selectedChat)
-  //     return;
-
-  //   const now = new Date();
-  //   const newMsg = {
-  //     id: selectedChat.messages.length + 1,
-  //     sender: user.username,
-  //     text: messageText,
-  //     date: now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-  //     files: attachedFiles.map((f) => ({
-  //       name: f.name,
-  //       type: f.type,
-  //       url: URL.createObjectURL(f), // 👈 для отображения
-  //     })),
-  //     // сохраняем имена файлов
-  //   };
-
-  //   const updatedChat = {
-  //     ...selectedChat,
-  //     messages: [...selectedChat.messages, newMsg],
-  //     lastMessage: messageText || `📎 ${attachedFiles.length} файл(ов)`,
-  //     date: now.toISOString(), // для сортировки используем ISO
-  //   };
-
-  //   setSelectedChat(updatedChat);
-  //   setMockChats((prev) =>
-  //     prev.map((chat) => (chat.id === updatedChat.id ? updatedChat : chat))
-  //   );
-
-  //   setMessageText("");
-  //   setAttachedFiles([]); // очищаем после отправки
-  // };
+  };
 
   const socketRef = useRef<Socket | null>(null);
 
@@ -170,6 +138,87 @@ export default function ChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [selectedChat?.messages]);
 
+  const editMessage = (messageId: string, newText: string) => {
+    if (!selectedChat) return;
+
+    // local update
+    const updatedChat = {
+      ...selectedChat,
+      messages: selectedChat.messages.map((msg: any) =>
+        msg.id === messageId ? { ...msg, text: newText } : msg
+      ),
+    };
+
+    setSelectedChat(updatedChat);
+    setMockChats((prev) =>
+      prev.map((chat) => (chat.id === updatedChat.id ? updatedChat : chat))
+    );
+
+    // sending to server
+    socketRef.current?.emit("message:edit", {
+      chatId: selectedChat.id,
+      messageId,
+      newText,
+    });
+  };
+
+  const deleteMessage = (messageId: string) => {
+    if (!selectedChat) return;
+
+    const updatedChat = {
+      ...selectedChat,
+      messages: selectedChat.messages.filter(
+        (msg: any) => msg.id !== messageId
+      ),
+    };
+
+    setSelectedChat(updatedChat);
+    setMockChats((prev) =>
+      prev.map((chat) => (chat.id === updatedChat.id ? updatedChat : chat))
+    );
+
+    socketRef.current?.emit("message:delete", {
+      chatId: selectedChat.id,
+      messageId,
+    });
+  };
+
+  useEffect(() => {
+    if (!socketRef.current) return;
+
+    socketRef.current.on("message:edit", (data) => {
+      setMockChats((prev) =>
+        prev.map((chat) =>
+          chat.id === data.chatId
+            ? {
+                ...chat,
+                messages: chat.messages.map((msg: any) =>
+                  msg.id === data.messageId
+                    ? { ...msg, text: data.newText }
+                    : msg
+                ),
+              }
+            : chat
+        )
+      );
+    });
+
+    socketRef.current.on("message:delete", (data) => {
+      setMockChats((prev) =>
+        prev.map((chat) =>
+          chat.id === data.chatId
+            ? {
+                ...chat,
+                messages: chat.messages.filter(
+                  (msg: any) => msg.id !== data.messageId
+                ),
+              }
+            : chat
+        )
+      );
+    });
+  }, []);
+
   return (
     <div className="relative h-screen w-full flex bg-zinc-700 overflow-hidden">
       {/* Список чатов */}
@@ -194,7 +243,10 @@ export default function ChatPage() {
             .map((chat) => (
               <div
                 key={chat.id}
-                onClick={() => setSelectedChat(chat)}
+                onClick={() => {
+                  setSelectedChat(chat);
+                  socketRef.current?.emit("join:conversation", chat.id);
+                }}
                 className={`flex items-center justify-between p-2 rounded cursor-pointer ${
                   selectedChat?.id === chat.id
                     ? "bg-zinc-600"
@@ -253,7 +305,30 @@ export default function ChatPage() {
                         : "bg-zinc-600 text-white"
                     }`}
                   >
-                    <p>{msg.text}</p>
+                    {editingMessageId === msg.id ? (
+                      <input
+                        type="text"
+                        value={editingText}
+                        onChange={(e) => setEditingText(e.target.value)}
+                        onBlur={() => {
+                          editMessage(msg.id, editingText);
+                          setEditingMessageId(null);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            editMessage(msg.id, editingText);
+                            setEditingMessageId(null);
+                          } else if (e.key === "Escape") {
+                            setEditingMessageId(null);
+                          }
+                        }}
+                        autoFocus
+                        className="p-1 rounded bg-zinc-700 text-white w-full"
+                      />
+                    ) : (
+                      <p>{msg.text}</p>
+                    )}
+
                     {msg.files?.length > 0 && (
                       <div className="mt-1 space-y-1">
                         {msg.files.map((file: any, i: number) => (
@@ -273,6 +348,28 @@ export default function ChatPage() {
                         ))}
                       </div>
                     )}
+
+                    {/* Кнопки редактирования и удаления */}
+                    {msg.sender === user.username &&
+                      editingMessageId !== msg.id && (
+                        <div className="flex gap-1 mt-1">
+                          <button
+                            onClick={() => {
+                              setEditingMessageId(msg.id);
+                              setEditingText(msg.text);
+                            }}
+                            className="text-xs text-yellow-400 hover:text-yellow-300"
+                          >
+                            ✎
+                          </button>
+                          <button
+                            onClick={() => deleteMessage(msg.id)}
+                            className="text-xs text-red-400 hover:text-red-300"
+                          >
+                            🗑
+                          </button>
+                        </div>
+                      )}
 
                     <span className="text-xs text-gray-300">{msg.date}</span>
                   </div>
